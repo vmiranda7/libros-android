@@ -11,9 +11,11 @@ import java.text.SimpleDateFormat;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -213,7 +215,7 @@ public class LibrosResource {
 	
 	
 	
-	private String INSERT_LIBRO_QUERY="insert into libros (titulo, autor, lengua, edicion, editorial, fechaedicion, fechaimpresion) values ( ?,?,?,?,?,?,?)";  ;
+	private String INSERT_LIBRO_QUERY="insert into libros (titulo, autor, lengua, edicion, editorial, fechaedicion, fechaimpresion) values ( ?,?,?,?,?,?,?)";  
 	
 	@POST
 	@Consumes(MediaType.LIBRO_API_LIBROS)
@@ -250,6 +252,93 @@ public class LibrosResource {
 			} else {
 				// Something has failed...
 			}
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return libro;
+	}
+	
+	private String DELETE_LIBRO_QUERY="DELETE  FROM libros where idlibro=?";
+	
+	@DELETE
+	@Path("/{idlibro}")
+	public void deleteSting(@PathParam("idlibro") String idlibro) {
+		//validateUser(stingid);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(DELETE_LIBRO_QUERY);
+			stmt.setInt(1, Integer.valueOf(idlibro));
+
+			int rows = stmt.executeUpdate();
+			if (rows == 0)
+				throw new NotFoundException("There's no sting with stingid="
+						+ idlibro);// Deleting inexistent sting
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+	private String UPDATE_LIBRO_QUERY = "update libros set titulo=ifnull(?, titulo), autor=ifnull(?, autor), lengua=ifnull(?, lengua), edicion=ifnull(?, edicion), fechaedicion=ifnull(?, fechaedicion), fechaimpresion=ifnull(?, fechaimpresion), editorial=ifnull(?, editorial) where stingid=?";
+	
+	
+	@PUT
+	@Path("/{idlibro}")
+	@Consumes(MediaType.LIBRO_API_LIBROS)
+	@Produces(MediaType.LIBRO_API_LIBROS)
+	public Libros updateSting(@PathParam("idlibro") String idlibro, Libros libro) {
+		//validateUser(stingid);
+		//validateUpdateSting(sting);
+		Connection conn = null;
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(UPDATE_LIBRO_QUERY);
+			stmt.setString(1, libro.getTitulo());
+			stmt.setString(2, libro.getAutor());
+			stmt.setString(3, libro.getLengua());
+			stmt.setString(4, libro.getEdicion());
+			stmt.setString(5, libro.getFechaedicion());
+			stmt.setString(6, libro.getFechaimpresion());
+			stmt.setString(7, libro.getEditorial());
+			stmt.setInt(8, Integer.valueOf(idlibro));
+			int rows = stmt.executeUpdate();
+			if (rows == 1)
+				libro = getLibroFromDatabase(idlibro);
+			else {
+				throw new NotFoundException("There's no sting with stingid="
+						+ idlibro);
+			}
+
 		} catch (SQLException e) {
 			throw new ServerErrorException(e.getMessage(),
 					Response.Status.INTERNAL_SERVER_ERROR);
