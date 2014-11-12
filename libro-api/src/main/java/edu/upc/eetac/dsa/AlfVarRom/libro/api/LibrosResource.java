@@ -45,7 +45,6 @@ public class LibrosResource {
 	
 		try {
 			conn = ds.getConnection();
-			System.out.print ("en1" +idlibros);
 		} catch (SQLException e) {
 			throw new ServerErrorException("Could not connect to the database",
 					Response.Status.SERVICE_UNAVAILABLE);
@@ -54,7 +53,6 @@ public class LibrosResource {
 		try {
 			stmt = conn.prepareStatement(GET_LIBROS_BY_ID_QUERY);
 			stmt.setInt(1, Integer.valueOf(idlibros));
-			System.out.print ("en5"+ GET_LIBROS_BY_ID_QUERY);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				libro.setIdlibros(rs.getInt("idlibro"));
@@ -98,8 +96,6 @@ public class LibrosResource {
 		Libros libros = getLibroFromDatabase(idlibros);	
 		// Calculate the ETag on last modified date of user resource
 		EntityTag eTag = new EntityTag(Long.toString(libros.getLastmodified()));
-		System.out.print ("en9");
-		System.out.println(idlibros);
 		// Verify if it matched with etag available in http request
 		Response.ResponseBuilder rb = request.evaluatePreconditions(eTag);
 
@@ -134,10 +130,8 @@ public class LibrosResource {
 			throw new ServerErrorException("Could not connect to the database",
 					Response.Status.SERVICE_UNAVAILABLE);
 		}
-		System.out.print(nombreautor);
 		PreparedStatement stmt = null;
 		try {
-			System.out.print(after);
 			boolean updateFromLast = after > 0;
 			stmt = updateFromLast ? conn
 					.prepareStatement(GET_LIBROS_BY_AUTOR_FROM_LAST) : conn
@@ -162,7 +156,6 @@ public class LibrosResource {
 			
 			boolean first = true;
 			long oldestTimestamp = 0;
-			System.out.print(rs.next());
 			while (rs.next()) {
 				Libros libro = new Libros();
 				libro.setIdlibros(rs.getInt("idlibro"));
@@ -302,6 +295,7 @@ public class LibrosResource {
 			}
 		}
 	}
+	
 	private String UPDATE_LIBRO_QUERY = "update libros set titulo=ifnull(?, titulo), autor=ifnull(?, autor), lengua=ifnull(?, lengua), edicion=ifnull(?, edicion), fechaedicion=ifnull(?, fechaedicion), fechaimpresion=ifnull(?, fechaimpresion), editorial=ifnull(?, editorial) where idlibro=?";
 	
 	
@@ -319,11 +313,9 @@ public class LibrosResource {
 			throw new ServerErrorException("Could not connect to the database",
 					Response.Status.SERVICE_UNAVAILABLE);
 		}
-
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(UPDATE_LIBRO_QUERY);
-			System.out.print(idlibro);
 			stmt.setString(1, libro.getTitulo());
 			stmt.setString(2, libro.getAutor());
 			stmt.setString(3, libro.getLengua());
