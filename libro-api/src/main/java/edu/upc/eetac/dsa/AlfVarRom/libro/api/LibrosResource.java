@@ -302,7 +302,7 @@ public class LibrosResource {
 			}
 		}
 	}
-	private String UPDATE_LIBRO_QUERY = "update libros set titulo=ifnull(?, titulo), autor=ifnull(?, autor), lengua=ifnull(?, lengua), edicion=ifnull(?, edicion), fechaedicion=ifnull(?, fechaedicion), fechaimpresion=ifnull(?, fechaimpresion), editorial=ifnull(?, editorial) where stingid=?";
+	private String UPDATE_LIBRO_QUERY = "update libros set titulo=ifnull(?, titulo), autor=ifnull(?, autor), lengua=ifnull(?, lengua), edicion=ifnull(?, edicion), fechaedicion=ifnull(?, fechaedicion), fechaimpresion=ifnull(?, fechaimpresion), editorial=ifnull(?, editorial) where idlibro=?";
 	
 	
 	@PUT
@@ -323,6 +323,7 @@ public class LibrosResource {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(UPDATE_LIBRO_QUERY);
+			System.out.print(idlibro);
 			stmt.setString(1, libro.getTitulo());
 			stmt.setString(2, libro.getAutor());
 			stmt.setString(3, libro.getLengua());
