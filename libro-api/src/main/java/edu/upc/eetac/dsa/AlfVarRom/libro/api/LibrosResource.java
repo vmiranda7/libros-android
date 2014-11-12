@@ -303,7 +303,7 @@ public class LibrosResource {
 	@Path("/{idlibro}")
 	@Consumes(MediaType.LIBRO_API_LIBROS)
 	@Produces(MediaType.LIBRO_API_LIBROS)
-	public Libros updateSting(@PathParam("idlibro") String idlibro, Libros libro) {
+	public Libros updateLibro(@PathParam("idlibro") String idlibro, Libros libro) {
 		//validateUser(stingid);
 		//validateUpdateSting(sting);
 		Connection conn = null;
