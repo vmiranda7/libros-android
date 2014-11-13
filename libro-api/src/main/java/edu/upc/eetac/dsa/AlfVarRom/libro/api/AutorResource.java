@@ -17,7 +17,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.Autores;
 import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.Libros;
@@ -25,7 +27,8 @@ import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.Libros;
 @Path("/autores")
 public class AutorResource {
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
-	
+	@Context
+	private SecurityContext security;
 	
 	private String DELETE_AUTOR_QUERY="DELETE  FROM autores where nombreautor=?";
 	
@@ -64,7 +67,7 @@ public class AutorResource {
 	}
 	private String GET_AUTORES_BY_NOMBRE = "select * from autores where nombreautores=?";
 	
-	private Autores getAutoresFromDatabase(String nombreautores) {
+	private Autores getAutoresFromDatabase(String nombreautor) {
 		Autores autor = new Autores();
 		Connection conn = null;
 
@@ -77,13 +80,13 @@ public class AutorResource {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(GET_AUTORES_BY_NOMBRE);
-			stmt.setString(1, nombreautores);
+			stmt.setString(1, nombreautor);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
 				autor.setNombreautor(rs.getString("nombreautor"));
 			} else {
 				throw new NotFoundException(
-						"There's no libro with nombreautor=" + nombreautores);
+						"There's no libro with nombreautor=" + nombreautor);
 			}
 
 		} catch (SQLException e) {

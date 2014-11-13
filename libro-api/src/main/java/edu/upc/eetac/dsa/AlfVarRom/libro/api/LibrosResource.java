@@ -26,6 +26,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.Libros;
 import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.LibrosCollection;
@@ -36,6 +37,8 @@ import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.LibrosCollection;
 @Path("/libros")
 public class LibrosResource {
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
+	@Context
+	private SecurityContext security;
 	
 	private String GET_LIBROS_BY_ID_QUERY = "select * from libros where idlibro=?";
 	
