@@ -14,7 +14,8 @@
 		"44c32d58-a984-e3a8-09eb-2e8586294181",
 		"64627113-3930-1ab7-f049-521bdc3a9ede",
 		"7cf41e18-31ef-3cf3-8aff-749de13eab01",
-		"2bec2531-bad0-832e-aa84-5c9725c23653"
+		"2bec2531-bad0-832e-aa84-5c9725c23653",
+		"6de27dc1-4bc4-3454-34f4-cb0b0aee5ecb"
 	],
 	"folders": [],
 	"timestamp": 1415735562814,
@@ -172,6 +173,25 @@
 			"responses": [],
 			"synced": false,
 			"rawModeData": "{\n  \"idlibro\":\"6\",\n\"creador\":\"test\",\n\"datos\":\"paco peco chico loco\",\n\"fecha\":\"10-23-40\"\n}"
+		},
+		{
+			"id": "6de27dc1-4bc4-3454-34f4-cb0b0aee5ecb",
+			"headers": "",
+			"url": "http://localhost:8080/libro-api/libros/search/titulo/titulo3",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "GET",
+			"data": [],
+			"dataMode": "params",
+			"name": "Serch con titulo",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1415885053945,
+			"version": 2,
+			"responses": [],
+			"tests": "",
+			"collectionId": "967324c7-4a5a-2c5b-2036-3ad41f4fd656",
+			"synced": false
 		},
 		{
 			"id": "7cf41e18-31ef-3cf3-8aff-749de13eab01",
