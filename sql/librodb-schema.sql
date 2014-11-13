@@ -10,13 +10,13 @@ create table usuarios (
 	name	varchar(40) not null
 );
 
-
 create table user_roles (
 	username			varchar(40) not null,
 	rolename 			varchar(40) not null,
 	foreign key(username) references usuarios(username) on delete cascade,
 	primary key (username, rolename)
 );
+
 create table autores (
 	nombreautor	varchar(40) not null primary key
 );

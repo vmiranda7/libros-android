@@ -31,21 +31,18 @@ import javax.ws.rs.core.SecurityContext;
 import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.Libros;
 import edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos.LibrosCollection;
 
-
-
-
 @Path("/libros")
 public class LibrosResource {
 	private DataSource ds = DataSourceSPA.getInstance().getDataSource();
 	@Context
 	private SecurityContext security;
-	
+
 	private String GET_LIBROS_BY_ID_QUERY = "select * from libros where idlibro=?";
-	
+
 	private Libros getLibroFromDatabase(String idlibros) {
 		Libros libro = new Libros();
 		Connection conn = null;
-	
+
 		try {
 			conn = ds.getConnection();
 		} catch (SQLException e) {
@@ -67,8 +64,7 @@ public class LibrosResource {
 				libro.setFechaimpresion(rs.getString("fechaimpresion"));
 				libro.setEditorial(rs.getString("editorial"));
 				libro.setLastmodified(rs.getTimestamp("lastmodified").getTime());
-			} 
-			else {
+			} else {
 				throw new NotFoundException("There's no libro with idlibro="
 						+ idlibros);
 			}
@@ -87,16 +83,16 @@ public class LibrosResource {
 
 		return libro;
 	}
-	
+
 	@GET
 	@Path("/{idlibros}")
 	@Produces(MediaType.LIBRO_API_LIBROS)
 	public Response getlibro(@PathParam("idlibros") String idlibros,
 			@Context Request request) {
 		// Create CacheControl
-		
+
 		CacheControl cc = new CacheControl();
-		Libros libros = getLibroFromDatabase(idlibros);	
+		Libros libros = getLibroFromDatabase(idlibros);
 		// Calculate the ETag on last modified date of user resource
 		EntityTag eTag = new EntityTag(Long.toString(libros.getLastmodified()));
 		// Verify if it matched with etag available in http request
@@ -112,19 +108,22 @@ public class LibrosResource {
 		// modified
 		// Get the updated representation and return with Etag attached to it
 		rb = Response.ok(libros).cacheControl(cc).tag(eTag);
-		
+
 		return rb.build();
 	}
-	
+
 	private String GET_LIBROS_BY_AUTOR_FROM_LAST = "select l.* from libros l where autor LIKE ? and l.lastmodified > ? order by lastmodified";
-	private String GET_LIBROS_BY_AUTOR = "select l.* from libros l where autor LIKE ? and l.lastmodified < if null ( ?, now()) order by lastmodified desc limit ?"; 
-	
+	private String GET_LIBROS_BY_AUTOR = "select l.* from libros l where autor LIKE ? and l.lastmodified < ifnull ( ?, now()) order by lastmodified desc limit ?";
+
 	@GET
 	@Path("/search/autor/{nombreautor}")
 	@Produces(MediaType.LIBRO_API_LIBROS_COLLECTION)
-	public LibrosCollection getLibros(@PathParam("nombreautor") String nombreautor, @QueryParam("length") int length,
+	public LibrosCollection getLibros(
+			@PathParam("nombreautor") String nombreautor,
+			@QueryParam("length") int length,
 			@QueryParam("before") long before, @QueryParam("after") long after) {
 		LibrosCollection coleccionlibros = new LibrosCollection();
+		coleccionlibros.setPattern(nombreautor);
 
 		Connection conn = null;
 		try {
@@ -139,24 +138,23 @@ public class LibrosResource {
 			stmt = updateFromLast ? conn
 					.prepareStatement(GET_LIBROS_BY_AUTOR_FROM_LAST) : conn
 					.prepareStatement(GET_LIBROS_BY_AUTOR);
-					stmt.setString(1, '%'+nombreautor+'%');
-					
+			stmt.setString(1, '%' + nombreautor + '%');
+
 			if (updateFromLast) {
 				stmt.setTimestamp(2, new Timestamp(after));
-				
+
 			} else {
-				if (before > 0){
+				if (before > 0) {
 					stmt.setTimestamp(2, new Timestamp(before));
-				
-				}
-				else
+
+				} else
 					stmt.setTimestamp(2, null);
 				length = (length <= 0) ? 5 : length;
 				stmt.setInt(3, length);
 			}
-			
+
 			ResultSet rs = stmt.executeQuery();
-			
+
 			boolean first = true;
 			long oldestTimestamp = 0;
 			while (rs.next()) {
@@ -171,15 +169,15 @@ public class LibrosResource {
 				libro.setEditorial(rs.getString("editorial"));
 				libro.setLastmodified(rs.getTimestamp("lastmodified").getTime());
 				oldestTimestamp = rs.getTimestamp("lastmodified").getTime();
-				libro.setLastmodified(oldestTimestamp); 
+				libro.setLastmodified(oldestTimestamp);
 				if (first) {
 					first = false;
 					coleccionlibros.setNewestTimestamp(libro.getLastmodified());
 				}
 				coleccionlibros.addLibros(libro);
-			} 
-			coleccionlibros.setOldestTimestamp(oldestTimestamp);	
-			
+			}
+			coleccionlibros.setOldestTimestamp(oldestTimestamp);
+
 		} catch (SQLException e) {
 			throw new ServerErrorException(e.getMessage(),
 					Response.Status.INTERNAL_SERVER_ERROR);
@@ -194,19 +192,18 @@ public class LibrosResource {
 
 		return coleccionlibros;
 	}
-	
-	
-	
-	
+
 	private String GET_LIBROS_BY_TITULO_FROM_LAST = "select l.* from libros l where titulo LIKE ? and l.lastmodified > ? order by lastmodified";
-	private String GET_LIBROS_BY_TITULO = "select l.* from libros l where titulo LIKE ? and l.lastmodified < if null ( ?, now()) order by lastmodified desc limit ?"; 
-	
+	private String GET_LIBROS_BY_TITULO = "select l.* from libros l where titulo LIKE ? and l.lastmodified < ifnull ( ?, now()) order by lastmodified desc limit ?";
+
 	@GET
 	@Path("/search/titulo/{titulo}")
 	@Produces(MediaType.LIBRO_API_LIBROS_COLLECTION)
-	public LibrosCollection getLibrostitulo(@PathParam("titulo") String titulo, @QueryParam("length") int length,
+	public LibrosCollection getLibrostitulo(@PathParam("titulo") String titulo,
+			@QueryParam("length") int length,
 			@QueryParam("before") long before, @QueryParam("after") long after) {
 		LibrosCollection coleccionlibros = new LibrosCollection();
+		coleccionlibros.setPattern(titulo);
 
 		Connection conn = null;
 		try {
@@ -221,24 +218,23 @@ public class LibrosResource {
 			stmt = updateFromLast ? conn
 					.prepareStatement(GET_LIBROS_BY_TITULO_FROM_LAST) : conn
 					.prepareStatement(GET_LIBROS_BY_TITULO);
-					stmt.setString(1,'%'+ titulo+'%');
-					
+			stmt.setString(1, '%' + titulo + '%');
+
 			if (updateFromLast) {
 				stmt.setTimestamp(2, new Timestamp(after));
-				
+
 			} else {
-				if (before > 0){
+				if (before > 0) {
 					stmt.setTimestamp(2, new Timestamp(before));
-				
-				}
-				else
+
+				} else
 					stmt.setTimestamp(2, null);
 				length = (length <= 0) ? 5 : length;
 				stmt.setInt(3, length);
 			}
-			
+
 			ResultSet rs = stmt.executeQuery();
-			
+
 			boolean first = true;
 			long oldestTimestamp = 0;
 			while (rs.next()) {
@@ -253,15 +249,15 @@ public class LibrosResource {
 				libro.setEditorial(rs.getString("editorial"));
 				libro.setLastmodified(rs.getTimestamp("lastmodified").getTime());
 				oldestTimestamp = rs.getTimestamp("lastmodified").getTime();
-				libro.setLastmodified(oldestTimestamp); 
+				libro.setLastmodified(oldestTimestamp);
 				if (first) {
 					first = false;
 					coleccionlibros.setNewestTimestamp(libro.getLastmodified());
 				}
 				coleccionlibros.addLibros(libro);
-			} 
-			coleccionlibros.setOldestTimestamp(oldestTimestamp);	
-			
+			}
+			coleccionlibros.setOldestTimestamp(oldestTimestamp);
+
 		} catch (SQLException e) {
 			throw new ServerErrorException(e.getMessage(),
 					Response.Status.INTERNAL_SERVER_ERROR);
@@ -276,25 +272,23 @@ public class LibrosResource {
 
 		return coleccionlibros;
 	}
-	
-	private void validateLibro (Libros libro){
-		
-		if ( libro.getAutor()==null){
+
+	private void validateLibro(Libros libro) {
+
+		if (libro.getAutor() == null) {
 			throw new BadRequestException("titulo no puede ser nulo");
 		}
-		if ( libro.getTitulo()==null){
+		if (libro.getTitulo() == null) {
 			throw new BadRequestException("titulo no puede ser nulo");
 		}
-		if ( libro.getEditorial()==null){
+		if (libro.getEditorial() == null) {
 			throw new BadRequestException("titulo no puede ser nulo");
-		}	
-	//Todos los campos
+		}
+		// Todos los campos
 	}
-	
-	
-	
-	private String INSERT_LIBRO_QUERY="insert into libros (titulo, autor, lengua, edicion, editorial, fechaedicion, fechaimpresion) values ( ?,?,?,?,?,?,?)";  
-	
+
+	private String INSERT_LIBRO_QUERY = "insert into libros (titulo, autor, lengua, edicion, editorial, fechaedicion, fechaimpresion) values ( ?,?,?,?,?,?,?)";
+
 	@POST
 	@Consumes(MediaType.LIBRO_API_LIBROS)
 	@Produces(MediaType.LIBRO_API_LIBROS)
@@ -313,7 +307,7 @@ public class LibrosResource {
 			stmt = conn.prepareStatement(INSERT_LIBRO_QUERY,
 					Statement.RETURN_GENERATED_KEYS);
 
-			//stmt.setString(1, security.getUserPrincipal().getName());
+			// stmt.setString(1, security.getUserPrincipal().getName());
 			stmt.setString(1, libro.getTitulo());
 			stmt.setString(2, libro.getAutor());
 			stmt.setString(3, libro.getLengua());
@@ -344,13 +338,13 @@ public class LibrosResource {
 
 		return libro;
 	}
-	
-	private String DELETE_LIBRO_QUERY="DELETE  FROM libros where idlibro=?";
-	
+
+	private String DELETE_LIBRO_QUERY = "DELETE  FROM libros where idlibro=?";
+
 	@DELETE
 	@Path("/{idlibro}")
 	public void deleteSting(@PathParam("idlibro") String idlibro) {
-		//validateUser(stingid);
+		// validateUser(stingid);
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -380,17 +374,16 @@ public class LibrosResource {
 			}
 		}
 	}
-	
+
 	private String UPDATE_LIBRO_QUERY = "update libros set titulo=ifnull(?, titulo), autor=ifnull(?, autor), lengua=ifnull(?, lengua), edicion=ifnull(?, edicion), fechaedicion=ifnull(?, fechaedicion), fechaimpresion=ifnull(?, fechaimpresion), editorial=ifnull(?, editorial) where idlibro=?";
-	
-	
+
 	@PUT
 	@Path("/{idlibro}")
 	@Consumes(MediaType.LIBRO_API_LIBROS)
 	@Produces(MediaType.LIBRO_API_LIBROS)
 	public Libros updateLibro(@PathParam("idlibro") String idlibro, Libros libro) {
-		//validateUser(stingid);
-		//validateUpdateSting(sting);
+		// validateUser(stingid);
+		// validateUpdateSting(sting);
 		Connection conn = null;
 		try {
 			conn = ds.getConnection();
@@ -431,5 +424,5 @@ public class LibrosResource {
 
 		return libro;
 	}
-	
+
 }

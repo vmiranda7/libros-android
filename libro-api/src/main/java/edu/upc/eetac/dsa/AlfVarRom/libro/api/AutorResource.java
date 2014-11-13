@@ -65,7 +65,7 @@ public class AutorResource {
 			}
 		}
 	}
-	private String GET_AUTORES_BY_NOMBRE = "select * from autores where nombreautores=?";
+	private String GET_AUTORES_BY_NOMBRE = "select * from autores where nombreautor=?";
 	
 	private Autores getAutoresFromDatabase(String nombreautor) {
 		Autores autor = new Autores();
