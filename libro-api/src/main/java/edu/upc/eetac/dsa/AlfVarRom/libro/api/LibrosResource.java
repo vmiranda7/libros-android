@@ -38,7 +38,8 @@ public class LibrosResource {
 	private SecurityContext security;
 
 	private String GET_LIBROS_BY_ID_QUERY = "select * from libros where idlibro=?";
-
+	private String GET_LIBROS = "Select * from libros";
+	
 	private Libros getLibroFromDatabase(String idlibros) {
 		Libros libro = new Libros();
 		Connection conn = null;
@@ -83,7 +84,51 @@ public class LibrosResource {
 
 		return libro;
 	}
+	
+	@GET
+	@Produces(MediaType.LIBRO_API_LIBROS_COLLECTION)
+	public LibrosCollection getLibros() {
+		LibrosCollection collecionlibros = new LibrosCollection();
+		Connection conn = null;
 
+		try {
+			conn = ds.getConnection();
+		} catch (SQLException e) {
+			throw new ServerErrorException("Could not connect to the database",
+					Response.Status.SERVICE_UNAVAILABLE);
+		}
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(GET_LIBROS);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				Libros libro = new Libros();
+				libro.setIdlibros(rs.getInt("idlibro"));
+				libro.setTitulo(rs.getString("titulo"));
+				libro.setAutor(rs.getString("autor"));
+				libro.setLengua(rs.getString("lengua"));
+				libro.setEdicion(rs.getString("edicion"));
+				libro.setFechaedicion(rs.getString("fechaedicion"));
+				libro.setFechaimpresion(rs.getString("fechaimpresion"));
+				libro.setEditorial(rs.getString("editorial"));
+				libro.setLastmodified(rs.getTimestamp("lastmodified").getTime());
+				collecionlibros.addLibros(libro);
+			} 
+		} catch (SQLException e) {
+			throw new ServerErrorException(e.getMessage(),
+					Response.Status.INTERNAL_SERVER_ERROR);
+		} finally {
+			try {
+				if (stmt != null)
+					stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+			}
+		}
+
+		return collecionlibros;
+	}
+	
 	@GET
 	@Path("/{idlibros}")
 	@Produces(MediaType.LIBRO_API_LIBROS)

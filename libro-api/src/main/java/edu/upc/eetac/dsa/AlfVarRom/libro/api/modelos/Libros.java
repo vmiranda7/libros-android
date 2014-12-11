@@ -1,7 +1,28 @@
 package edu.upc.eetac.dsa.AlfVarRom.libro.api.modelos;
 
+import java.util.List;
+
+import javax.ws.rs.core.Link;
+
+import org.glassfish.jersey.linking.Binding;
+import org.glassfish.jersey.linking.InjectLink;
+import org.glassfish.jersey.linking.InjectLinks;
+import org.glassfish.jersey.linking.InjectLink.Style;
+
+import edu.upc.eetac.dsa.AlfVarRom.libro.api.LibrosResource;
+import edu.upc.eetac.dsa.AlfVarRom.libro.api.MediaType;
+
 public class Libros {
-	
+	@InjectLinks({
+		@InjectLink(resource = LibrosResource.class, style = Style.ABSOLUTE, rel = "libros", title = "Latest libros", type = MediaType.LIBRO_API_LIBROS_COLLECTION),
+		@InjectLink(resource = LibrosResource.class, style = Style.ABSOLUTE, rel = "self edit", title = "Libro", type = MediaType.LIBRO_API_LIBROS, method = "getlibro", bindings = @Binding(name = "idlibros", value = "${instance.idlibros}")) })
+	private List<Link> links;
+	public List<Link> getLinks() {
+		return links;
+	}
+	public void setLinks(List<Link> links) {
+		this.links = links;
+	}
 	private int idlibros;
 	private String titulo;
 	private String autor;
